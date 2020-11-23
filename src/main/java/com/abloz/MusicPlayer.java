@@ -1,59 +1,52 @@
 package com.abloz;
-import javazoom.jl.player.Player;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 
-//import javax.media.Manager;
-//import javax.media.NoPlayerException;
-//import javax.media.Player;
+import javazoom.jl.decoder.JavaLayerException;
+import javazoom.jl.player.Player;
 
 public class MusicPlayer {
-    Logger logger = LoggerFactory.getLogger(MusicPlayer.class);
-    Player player = null;
-    String fileName = "aaa.mp3";
+    FileInputStream inputStream = null;
+    BufferedInputStream bufferedInputStream = null;
+    String fileName = "src/main/resources/a1.mp3";
 
-    public MusicPlayer(){};
+    public MusicPlayer() {
+    }
+
     public MusicPlayer(String fileName) {
         this.fileName = fileName;
     }
 
-    public String getFileName() {
-        return fileName;
-    }
-
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
-    }
-
-    /**
-     * 播放 20 秒并结束播放
-     */
     public void play() {
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    File file = new File(fileName);
-                    FileInputStream fis = new FileInputStream(file);
-                    BufferedInputStream stream = new BufferedInputStream(fis);
-                    player = new Player(stream);
-                    player.play();
-                } catch (Exception e) {
+        // 声明一个File对象
+        File file = new File(fileName);
 
-                    logger.error("Can't play the file:"+fileName);
+        new Thread(() -> {
+            // 调用播放方法进行播放
+            try {
+                // 创建一个输入流
+                inputStream = new FileInputStream(file);
+                // 创建一个缓冲流
+                bufferedInputStream = new BufferedInputStream(inputStream);
+                // 创建播放器对象，把文件的缓冲流传入进去
+                final Player player = new Player(bufferedInputStream);
+                player.play();
+
+            } catch (JavaLayerException | FileNotFoundException e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    inputStream.close();
+                    bufferedInputStream.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
         }).start();
-        try {
-            Thread.sleep(20000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        player.close();
+
     }
 }
