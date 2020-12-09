@@ -17,6 +17,7 @@ public class AlarmWindow extends JFrame {
     JButton stop = new JButton("停止本闹钟");
     JButton close = new JButton("关闭窗口");
     JFrame frame = null;
+    MusicPlayer p = new MusicPlayer("a1.mp3");
     public AlarmWindow(String alarm, JobExecutionContext context)
     {
         super(alarm);
@@ -46,6 +47,7 @@ public class AlarmWindow extends JFrame {
                 } catch (SchedulerException ex) {
                     ex.printStackTrace();
                 }
+                p.stop();
             }
         });
         close.addActionListener(new ActionListener() {
@@ -53,11 +55,13 @@ public class AlarmWindow extends JFrame {
 //                frame.dispose();
                 //添加在frame上的windowListener的windowClosing操作响应，如果需要在窗口关闭的时候对窗口中的一些数据进行处理，用下面的方法。
                 frame.dispatchEvent(new WindowEvent(frame,WindowEvent.WINDOW_CLOSING) );
-
+                p.stop();
             }
         });
 
 //        add(new JButton("停止"));
+
+        p.play();
         setAlwaysOnTop(true);
         setVisible(true);
     }
