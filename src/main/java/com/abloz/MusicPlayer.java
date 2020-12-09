@@ -25,8 +25,15 @@ public class MusicPlayer {
     }
 
     public void stop() {
-        playThread.interrupt();
-        player.close();
+        if(playThread!=null && playThread.isAlive()) {
+            playThread.interrupt();
+        }
+
+        if(player!=null){
+            player.close();
+            player = null;
+        }
+
     }
     public void play() {
 
@@ -46,6 +53,7 @@ public class MusicPlayer {
                 if(Thread.currentThread().isInterrupted()){
                     //处理中断逻辑
                     player.close();
+                    player = null;
                     return;
                 }
             } catch (JavaLayerException | FileNotFoundException e) {
@@ -56,6 +64,10 @@ public class MusicPlayer {
                 try {
                     inputStream.close();
                     bufferedInputStream.close();
+                    if(player!=null){
+                        player.close();
+                        player = null;
+                    }
 
                 } catch (Exception e) {
                     e.printStackTrace();

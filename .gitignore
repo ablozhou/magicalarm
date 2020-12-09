@@ -6,3 +6,4 @@ build/
 config.txt
 bin/libs/
 bin/Alarm*
+*.mp3

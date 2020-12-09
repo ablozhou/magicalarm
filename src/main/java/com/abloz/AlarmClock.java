@@ -18,6 +18,7 @@ import java.awt.event.ActionListener;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
+import java.time.Instant;
 import java.util.*;
 import java.util.List;
 
@@ -321,6 +322,7 @@ public class AlarmClock extends JFrame implements ActionListener {
         //对星期单独处理，因为星期显示和值不一样
         javax.swing.JTextField jTextField = (javax.swing.JTextField)dayComboBox.getEditor().getEditorComponent();
 
+        StringBuilder dayBuilder = new StringBuilder();
         Set<Integer> dayIndex = dayComboBox.getIndexSet();
         if(dayIndex.isEmpty()) { //没有选中，则直接获取编辑框的值
             day=jTextField.getText();
@@ -338,12 +340,12 @@ public class AlarmClock extends JFrame implements ActionListener {
             });
             Collections.sort(dl);
             for(Integer d:dl){
-                sb.append(d).append(",");
+                dayBuilder.append(d).append(",");
             }
-            if(sb.length()>0 && sb.charAt(sb.length()-1)==','){
-                sb.deleteCharAt(sb.length()-1);
+            if(dayBuilder.length()>0 && dayBuilder.charAt(dayBuilder.length()-1)==','){
+                dayBuilder.deleteCharAt(dayBuilder.length()-1);
             }
-            day=sb.toString();
+            day=dayBuilder.toString();
         }
 
         //处理日期和星期的冲突，只能二选一
@@ -400,6 +402,9 @@ public class AlarmClock extends JFrame implements ActionListener {
                 labelStatus.setText(e.getMessage());
                 return;
             }
+            if(!jTextArea.getText().endsWith("\n")) {
+                jTextArea.append("\n");
+            }
             jTextArea.append(cron);
 
             ConfigFile.writeFile(readConfigText());
@@ -411,8 +416,12 @@ public class AlarmClock extends JFrame implements ActionListener {
         logger.info("add alarms:"+cronStr);
         String[] cronStrs = cronStr.split("\n");
 
-        Integer i=myQuartz.scheduler.getJobKeys(GroupMatcher.jobGroupEquals(GROUP_NAME)).size();
+
+//        myQuartz.scheduler.getJobKeys(GroupMatcher.jobGroupEquals(GROUP_NAME)).size();
+
         for(String c :cronStrs) {
+            Instant instant = Instant.now();
+            String jobName = instant.toString();
             c = c.trim();
             if(c.startsWith("#") || c.length()<=0) {
                 continue;
@@ -420,7 +429,7 @@ public class AlarmClock extends JFrame implements ActionListener {
 
             Integer cronIndex = c.indexOf(";");
             String cronExpr = c;
-            String note= "alarm "+i+":";
+            String note= "alarm :";
             if(cronIndex == -1) {
                 cronExpr = c;
             }else{
@@ -428,14 +437,13 @@ public class AlarmClock extends JFrame implements ActionListener {
                 note += c.substring(cronIndex+1);
             }
 
-            Trigger trigger = myQuartz.addCronTrigger(cronExpr,"trig"+i,GROUP_NAME);
-            JobDetail jobDetail = myQuartz.addJob(AlarmJob.class,"job"+i,GROUP_NAME);
+            Trigger trigger = myQuartz.addCronTrigger(cronExpr,"trig "+jobName,GROUP_NAME);
+            JobDetail jobDetail = myQuartz.addJob(AlarmJob.class,"job "+jobName,GROUP_NAME);
             trigger.getJobDataMap().put("note", note);
             jobDetail.getJobDataMap().put("note", note);
 
             myQuartz.scheduleJob(jobDetail,trigger);
 
-            i++;
         }
 
     }
