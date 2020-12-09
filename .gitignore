@@ -1,0 +1,6 @@
+.*
+*.iml
+out/
+target/
+build/
+config.txt

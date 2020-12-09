@@ -14,7 +14,7 @@ import java.io.FileInputStream;
 public class MusicPlayer {
     Logger logger = LoggerFactory.getLogger(MusicPlayer.class);
     Player player = null;
-    String fileName = "aaa.mp3";
+    String fileName = "src/main/resources/alarm.wav";
 
     public MusicPlayer(){};
     public MusicPlayer(String fileName) {
@@ -50,7 +50,7 @@ public class MusicPlayer {
             }
         }).start();
         try {
-            Thread.sleep(20000);
+            Thread.sleep(10000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

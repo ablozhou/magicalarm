@@ -31,21 +31,36 @@ import static org.quartz.DateBuilder.*;
 public class AlarmJob  implements Job {
     Logger logger = LoggerFactory.getLogger(AlarmJob.class);
     @Override
-    public void execute(JobExecutionContext context) throws JobExecutionException {
-        Object tv1 = context.getTrigger().getJobDataMap().get("tkey");
+    public void execute(JobExecutionContext context)  {
+        Object tv1 = context.getTrigger().getJobDataMap().get("note");
 //        Object tv2 = context.getTrigger().getJobDataMap().get("t2");
-        Object jv1 = context.getJobDetail().getJobDataMap().get("jkey");
+        Object note = context.getJobDetail().getJobDataMap().get("note");
+        JobKey jobKey = context.getJobDetail().getKey();
+        TriggerKey triggerKey = context.getTrigger().getKey();
+//        try {
+//            context.getScheduler().interrupt(jobKey); //job must implement IInterruptJob
+//        } catch (UnableToInterruptJobException e) {
+//            e.printStackTrace();
+//        }
 //        Object jv2 = context.getJobDetail().getJobDataMap().get("j2");
         Object sv = null;
         try {
-            sv = context.getScheduler().getContext().get("skey");
+            sv = context.getScheduler().getContext().get("note");
         } catch (SchedulerException e) {
             e.printStackTrace();
         }
+
+//        try { //stop job
+//            context.getScheduler().unscheduleJob(triggerKey);
+//        } catch (SchedulerException e) {
+//            e.printStackTrace();
+//        }
+
         logger.info("schedule value:"+sv);
-        logger.info("job value:"+jv1);
+        logger.info("job value:"+note);
         logger.info("trigger value" + tv1);
         logger.info("time:"+LocalDateTime.now());
+        new AlarmWindow(note==null?"alarm":note.toString(), context);
     }
 
 

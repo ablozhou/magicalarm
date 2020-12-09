@@ -1,6 +1,14 @@
 package com.abloz;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
+import org.quartz.impl.matchers.GroupMatcher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import static org.quartz.CronScheduleBuilder.cronSchedule;
 import static org.quartz.JobBuilder.*;
@@ -22,9 +30,9 @@ import static org.quartz.SimpleScheduleBuilder.*;
 //      第1列表示秒0～59 范围，每秒钟用*或者 */1表示
 //        第2列表示分钟0～59 每分钟用*或者 */1表示
 //        第3列表示小时0～23（0表示0点）
-//        第4列表示日期1～31
-//        第5列表示月份0～11
-//        第6列标识号星期1～7（1表示星期天）或者使用字符串SUN，MON，TUE，WED，THU，FRI和SAT
+//        第4列表示每月日期1～31 如果要指定星期，则该列为?
+//        第5列表示月份 0～11
+//        第6列标识号星期1～7（1表示星期天）或者使用字符串SUN，MON，TUE，WED，THU，FRI和SAT。如果日期为*，或指定日期，则该列为?
 //        第7列年 可选
 //
 //        *：表示任意时间都，实际上就是“每”的意思。可以代表00-23小时或者00-12每月或者00-59分
@@ -32,6 +40,7 @@ import static org.quartz.SimpleScheduleBuilder.*;
 //        ,：是分割时段，30 3,19,21 * * * cmd，就是每天凌晨3和晚上19,21点的半点时刻执行命令
 //        /n：表示分割，可以看成除法，*/5 * * * * cmd，每隔五分钟执行一次
 public class MyQuartz {
+    Logger logger = LoggerFactory.getLogger(MyQuartz.class);
     Scheduler scheduler = null;
     private static MyQuartz myQuartz = null;
     public static MyQuartz getMyQuartz() {
@@ -70,6 +79,7 @@ public class MyQuartz {
         return trigger;
     }
     public Trigger addCronTrigger(String cronExpr,String name,String group) {
+        logger.info("add cron:"+cronExpr);
         Trigger trigger = newTrigger()
                 .withIdentity(name,group)
                 .startNow()
@@ -102,24 +112,50 @@ public class MyQuartz {
             }
         }
     }
-    public static void main(String[] args) {
-        MyQuartz myQuartz = new MyQuartz();
-        try {
-            Scheduler scheduler = myQuartz.start();
-            scheduler.getContext().put("skey","喝水schedule");
-            // define the job and tie it to our HelloJob class
-            JobDetail jobDetail = myQuartz.addJob(AlarmJob.class,"alarmJob","agroup");
-            jobDetail.getJobDataMap().put("jkey","喝水Job");
-            // Trigger the job to run now, and then repeat every 3 seconds
-            String cronExpr = "0/3 * * * * ?";
-            Trigger trigger = myQuartz.addCronTrigger(cronExpr,"alrmtrigger", "agroup");
+    public Set<JobKey> getJobs(String groupName) throws SchedulerException {
+        Set<JobKey> jobKeys = scheduler.getJobKeys(GroupMatcher.jobGroupEquals(groupName));
+        for (JobKey jobKey : jobKeys) {
 
-            trigger.getJobDataMap().put("tkey","喝水trigger");
-            // Tell quartz to schedule the job using our trigger
-            myQuartz.scheduleJob(jobDetail, trigger);
+            String jobName = jobKey.getName();
+            String jobGroup = jobKey.getGroup();
 
-        } catch (SchedulerException se) {
-            se.printStackTrace();
+            //get job's trigger
+            List<Trigger> triggers = (List<Trigger>) scheduler.getTriggersOfJob(jobKey);
+            Date nextFireTime = triggers.get(0).getNextFireTime();
+
+            logger.info("[jobName] : " + jobName + " [groupName] : "
+                    + jobGroup + " ,nextFireTime: " + nextFireTime);
+
         }
+        return jobKeys;
     }
+    public Set<JobKey> getJobs() throws SchedulerException {
+        Set<JobKey> jobKeys = new HashSet<>();
+        for (String groupName : scheduler.getJobGroupNames()) {
+            jobKeys.addAll(getJobs(groupName));
+        }
+        return jobKeys;
+    }
+//    public static void main(String[] args) {
+//        MyQuartz myQuartz = new MyQuartz();
+//        try {
+//            Scheduler scheduler = myQuartz.start();
+//            scheduler.getContext().put("note","喝水schedule");
+//            // define the job and tie it to our HelloJob class
+//            JobDetail jobDetail = myQuartz.addJob(AlarmJob.class,"alarmJob","agroup");
+//            jobDetail.getJobDataMap().put("note","喝水Job");
+//            // Trigger the job to run now, and then repeat every 3 seconds
+//            String cronExpr = "0/5 * * * * ?";
+//            Trigger trigger = myQuartz.addCronTrigger(cronExpr,"alrmtrigger", "agroup");
+//
+//            trigger.getJobDataMap().put("note","喝水trigger");
+//            // Tell quartz to schedule the job using our trigger
+//            myQuartz.scheduleJob(jobDetail, trigger);
+//            myQuartz.getJobs();
+//        } catch (SchedulerException se) {
+//            se.printStackTrace();
+//        }
+//
+//
+//    }
 }

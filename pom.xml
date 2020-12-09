@@ -76,6 +76,10 @@
         <plugin>
           <artifactId>maven-compiler-plugin</artifactId>
           <version>3.8.0</version>
+          <configuration>
+            <source>1.8</source>
+            <target>1.8</target>
+          </configuration>
         </plugin>
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
@@ -84,6 +88,55 @@
         <plugin>
           <artifactId>maven-jar-plugin</artifactId>
           <version>3.0.2</version>
+          <!-- 对要打的jar包进行配置 -->
+          <configuration>
+            <!-- Configuration of the archiver -->
+            <archive>
+              <!--生成的jar中，不要包含pom.xml和pom.properties这两个文件-->
+              <addMavenDescriptor>false</addMavenDescriptor>
+
+              <!-- Manifest specific configuration -->
+              <manifest>
+                <!--是否要把第三方jar放到manifest的classpath中-->
+                <addClasspath>true</addClasspath>
+
+                <!--
+                生成的manifest中classpath的前缀，
+                因为要把第三方jar放到lib目录下，
+                所以classpath的前缀是lib/
+                -->
+                <classpathPrefix>libs/</classpathPrefix>
+                <mainClass>com.abloz.AlarmClock</mainClass>
+              </manifest>
+            </archive>
+            <!--过滤掉不希望包含在jar中的文件-->
+            <excludes>
+              <!-- 排除不需要的文件夹(路径是jar包内部的路径) -->
+              <exclude>**/assembly/</exclude>
+            </excludes>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <version>3.1.2</version>
+          <executions>
+            <execution>
+              <id>copy-dependencies</id>
+              <phase>package</phase>
+              <goals>
+                <goal>copy-dependencies</goal>
+              </goals>
+              <configuration>
+                <outputDirectory>
+                  ${project.build.directory}/libs
+                </outputDirectory>
+                <overWriteReleases>false</overWriteReleases>
+                <overWriteSnapshots>false</overWriteSnapshots>
+                <overWriteIfNewer>true</overWriteIfNewer>
+              </configuration>
+            </execution>
+          </executions>
         </plugin>
         <plugin>
           <artifactId>maven-install-plugin</artifactId>
@@ -102,7 +155,34 @@
           <artifactId>maven-project-info-reports-plugin</artifactId>
           <version>3.0.0</version>
         </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-shade-plugin</artifactId>
+          <version>3.2.1</version>
+          <executions>
+            <execution>
+              <phase>package</phase>
+              <goals>
+                <goal>shade</goal>
+              </goals>
+              <configuration>
+                <transformers>
+                  <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                    <mainClass>com.abloz.AlarmClock</mainClass>
+                  </transformer>
+                </transformers>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
+
       </plugins>
     </pluginManagement>
+      <plugins>
+          <plugin>
+              <artifactId>maven-dependency-plugin</artifactId>
+          </plugin>
+      </plugins>
   </build>
+
 </project>

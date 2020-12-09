@@ -23,7 +23,7 @@ public class AlarmJobTest {
             Trigger trigger = TriggerBuilder.newTrigger()
                     .withIdentity("trigger1", "group1")
                     .usingJobData("t1", "tv1")
-                    .withSchedule(SimpleScheduleBuilder.simpleSchedule().withIntervalInSeconds(3)
+                    .withSchedule(SimpleScheduleBuilder.simpleSchedule().withIntervalInSeconds(5)
                             .repeatForever()).build();
             trigger.getJobDataMap().put("t2", "tv2");
 
@@ -36,10 +36,11 @@ public class AlarmJobTest {
             //注册trigger并启动scheduler
             scheduler.scheduleJob(job,trigger);
             scheduler.start();
-
-            while(true) {
-                Thread.sleep(1000);
+            int i=0;
+            while(i<1) {
+                Thread.sleep(5000);
+                i++;
             }
-
+            scheduler.shutdown();
     }
 }

@@ -1,36 +1,54 @@
-# magicalarm
+# Magic Alarm
+My first target is to alert some hard working person to stand up to move and drink some water.
+Also you can use to alert your girl friend's birthday or other important things.
+
+Author: 周海汉(zhouhh) <ablozhou@gmail.com>
 
 #### Description
-万能闹钟
+Magic Alarm(万能闹钟), an alarm tool support Windows,Mac,Linux OS.
+It can config like crontab.
 
-#### Software Architecture
-Software architecture description
+#### Env
+java 1.8 +
+
+perfect java 1.9
 
 #### Installation
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+from source:
+```
+mvn package
+```
+copy Alarmer.xxx.jar and libs to bin/.
+
+on Windows run:
+```
+run.bat
+```
+on Mac/Linux run:
+```
+run.sh
+```
+
 
 #### Instructions
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+config.txt example
+```
+# second (0-59) minute(0-59) hour(0-23) date of month(1-31) month(0-11) day of week(1-7,1 for sunday) year(opt) 
+# 0/n every n unit.'*' : every unit. '?' optional. date and day must one be '?', but not same '?'.
+# ';' split a alarm note message.
+
+0 0/2 * * * ?;  every 2 minute alarm.
+0 0/30 8-18 ? * 2-6; working day every 30 minutes , alarm  drinking water
+```
 
 #### Contribution
 
-1.  Fork the repository
+1.  Fork the repository from https://gitee.com/ablozhou/magicalarm.git
 2.  Create Feat_xxx branch
 3.  Commit your code
 4.  Create Pull Request
 
-
-#### Gitee Feature
-
-1.  You can use Readme\_XXX.md to support different languages, such as Readme\_en.md, Readme\_zh.md
-2.  Gitee blog [blog.gitee.com](https://blog.gitee.com)
-3.  Explore open source project [https://gitee.com/explore](https://gitee.com/explore)
-4.  The most valuable open source project [GVP](https://gitee.com/gvp)
-5.  The manual of Gitee [https://gitee.com/help](https://gitee.com/help)
-6.  The most popular members  [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
+#### Toto
+Add audio and music
