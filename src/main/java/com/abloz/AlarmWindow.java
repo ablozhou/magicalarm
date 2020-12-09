@@ -58,7 +58,7 @@ public class AlarmWindow extends JFrame {
         });
 
 //        add(new JButton("停止"));
-
+        setAlwaysOnTop(true);
         setVisible(true);
     }
 }
