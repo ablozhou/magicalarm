@@ -4,3 +4,5 @@ out/
 target/
 build/
 config.txt
+bin/libs/
+bin/Alarm*
