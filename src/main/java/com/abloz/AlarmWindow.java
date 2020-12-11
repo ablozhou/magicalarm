@@ -9,15 +9,17 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.time.LocalDateTime;
 
 public class AlarmWindow extends JFrame {
     Logger logger = LoggerFactory.getLogger(AlarmWindow.class);
-    JButton stop = new JButton("停止本闹钟");
     JButton close = new JButton("关闭窗口");
+    JButton stop = new JButton("停止本闹钟");
+
     JFrame frame = null;
-    MusicPlayer p = new MusicPlayer("a1.mp3");
+    MusicPlayer p = new MusicPlayer("bin/audio/a1.mp3");
     public AlarmWindow(String alarm, JobExecutionContext context)
     {
         super(alarm);
@@ -31,12 +33,28 @@ public class AlarmWindow extends JFrame {
         jPanel.add(new JLabel(alarm),BorderLayout.CENTER);
         JPanel buttonsPanel = new JPanel();
         buttonsPanel.setLayout(new FlowLayout());
+
         buttonsPanel.add(stop);
         buttonsPanel.add(close);
+        stop.setDefaultCapable(false);
+
+        this.getRootPane().setDefaultButton(close);
+
         jPanel.add(buttonsPanel,BorderLayout.SOUTH);
         setContentPane(jPanel);
 
         frame = this;
+
+        // ESC和Enter都关闭闹钟窗口
+        ActionListener actionListener =new ActionListener(){
+            public void actionPerformed(ActionEvent e) {
+                frame.dispose();
+            }
+
+        };
+        frame.getRootPane().registerKeyboardAction(actionListener, "close",
+                KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
+                JComponent.WHEN_IN_FOCUSED_WINDOW);
 
         stop.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -64,6 +82,7 @@ public class AlarmWindow extends JFrame {
         p.play();
         setAlwaysOnTop(true);
         setVisible(true);
+        close.requestFocus();
     }
 }
 

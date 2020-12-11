@@ -14,7 +14,7 @@ public class MusicPlayer {
     Logger logger = LoggerFactory.getLogger(MusicPlayer.class);
     FileInputStream inputStream = null;
     BufferedInputStream bufferedInputStream = null;
-    String fileName = "a1.mp3";
+    String fileName = "bin/audio/a1.mp3";
     Thread playThread = null;
     Player player = null;
     public MusicPlayer() {

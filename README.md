@@ -12,7 +12,7 @@
 
 系统最低需求java 8
 
-良好体验：java 9 以上
+良好体验：[java 9](https://www.oracle.com/technetwork/cn/java/javase/downloads/jre9-downloads-3848532-zhs.html) 以上 
 
 #### 安装教程
 
