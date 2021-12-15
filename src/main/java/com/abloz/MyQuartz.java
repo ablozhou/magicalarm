@@ -1,19 +1,27 @@
 package com.abloz;
-import org.quartz.*;
-import org.quartz.impl.StdSchedulerFactory;
-import org.quartz.impl.matchers.GroupMatcher;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import static org.quartz.CronScheduleBuilder.cronSchedule;
+import static org.quartz.JobBuilder.newJob;
+import static org.quartz.TriggerBuilder.newTrigger;
+
+import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static org.quartz.CronScheduleBuilder.cronSchedule;
-import static org.quartz.JobBuilder.*;
-import static org.quartz.TriggerBuilder.*;
-import static org.quartz.SimpleScheduleBuilder.*;
+import org.quartz.Job;
+import org.quartz.JobDetail;
+import org.quartz.JobKey;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
+import org.quartz.SimpleScheduleBuilder;
+import org.quartz.Trigger;
+import org.quartz.impl.StdSchedulerFactory;
+import org.quartz.impl.matchers.GroupMatcher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 //CronTrigger通常比Simple Trigger更有用，如果您需要基于日历的概念而不是按照SimpleTrigger的精确指定间隔进行重新启动的作业启动计划。
 //
@@ -43,13 +51,15 @@ public class MyQuartz {
     Logger logger = LoggerFactory.getLogger(MyQuartz.class);
     Scheduler scheduler = null;
     private static MyQuartz myQuartz = null;
+
     public static MyQuartz getMyQuartz() {
-        if(myQuartz == null) {
+        if (myQuartz == null) {
             myQuartz = new MyQuartz();
         }
         return myQuartz;
     }
-    private MyQuartz()  {
+
+    private MyQuartz() {
         // Grab the Scheduler instance from the Factory
 
     }
@@ -63,48 +73,102 @@ public class MyQuartz {
 
     /**
      * simpleSchedule()
-     *                         .withIntervalInSeconds(40)
-     *                         .repeatForever()
+     * .withIntervalInSeconds(40)
+     * .repeatForever()
+     * 
      * @param simpleSchedule
      * @param name
      * @param group
      * @return
      */
-    public Trigger addSimpleTrigger(SimpleScheduleBuilder simpleSchedule, String name,String group){
+    public Trigger addSimpleTrigger(SimpleScheduleBuilder simpleSchedule, String name, String group) {
         Trigger trigger = newTrigger()
-                .withIdentity(name,group)
+                .withIdentity(name, group)
                 .startNow()
                 .withSchedule(simpleSchedule)
                 .build();
         return trigger;
     }
-    public Trigger addCronTrigger(String cronExpr,String name,String group) {
-        logger.info("add cron:"+cronExpr);
+
+    /**
+     * 将星期的第一天从1开始。为了和crontab兼容，暂未使用
+     */
+    public String firstDayOfWeek(String cronExpr){
+        //处理表达式星期，因为quartz的星期日为1，不符合中国人习惯。将数字处理为1-7分别表示周一到周日。
+        Calendar now = Calendar.getInstance();
+        //一周第一天是否为星期天
+        boolean isFirstSunday = (now.getFirstDayOfWeek() == Calendar.SUNDAY);
+        
+        now.setFirstDayOfWeek(Calendar.MONDAY);
+        String[] cronList = cronExpr.split(" ");
+        String weekStr = cronList[5];
+
+        char[] weeks = weekStr.toCharArray();
+        //若一周第一天为星期天，则-1
+        StringBuilder sb = new StringBuilder();
+        int weekDay=0;
+        char last = 'a';//any char but not #
+        for(char c :weeks){
+            weekDay = c-'0';
+            //对数字进行处理，因为星期值范围0-7，所以直接处理
+            if( weekDay >=0 && weekDay<=9){
+                //3#2 表示当月第2周的第3天，所以2不应该处理。
+                if(last!='#'){ 
+                    if(isFirstSunday){
+                        weekDay = weekDay - 1;
+                        if(weekDay == 0){
+                            weekDay = 7;
+                        }
+
+                        sb.append(weekDay);
+                    }
+                }
+            }else{
+                sb.append(c);
+            }
+            last=c;
+        }
+
+        cronList[5]=sb.toString();
+
+        //将字符数字转为字符串
+        return Arrays.stream(cronList).map(s->s+" ").reduce("",String::concat);
+        
+    }
+        
+    
+    public Trigger addCronTrigger(String cronExpr, String name, String group) {
+        logger.info("add cron:" + cronExpr);
+
         Trigger trigger = newTrigger()
-                .withIdentity(name,group)
+                .withIdentity(name, group)
                 .startNow()
                 .withSchedule(cronSchedule(cronExpr))
                 .build();
         return trigger;
     }
+
     public void setScheduler(Scheduler scheduler) {
         this.scheduler = scheduler;
     }
+
     public Scheduler start() throws SchedulerException {
-        if(scheduler == null) {
+        if (scheduler == null) {
             scheduler = StdSchedulerFactory.getDefaultScheduler();
         }
         // and start it
         scheduler.start();
         return scheduler;
     }
-    public void scheduleJob(JobDetail jobDetail,Trigger trigger) throws SchedulerException {
-        scheduler.scheduleJob(jobDetail,trigger);
+
+    public void scheduleJob(JobDetail jobDetail, Trigger trigger) throws SchedulerException {
+        scheduler.scheduleJob(jobDetail, trigger);
     }
-    public void stop()  {
-        if(scheduler != null) {
+
+    public void stop() {
+        if (scheduler != null) {
             try {
-                if(scheduler.isStarted()) {
+                if (scheduler.isStarted()) {
                     scheduler.shutdown();
                 }
             } catch (SchedulerException e) {
@@ -112,6 +176,7 @@ public class MyQuartz {
             }
         }
     }
+
     public Set<JobKey> getJobs(String groupName) throws SchedulerException {
         Set<JobKey> jobKeys = scheduler.getJobKeys(GroupMatcher.jobGroupEquals(groupName));
         for (JobKey jobKey : jobKeys) {
@@ -119,7 +184,7 @@ public class MyQuartz {
             String jobName = jobKey.getName();
             String jobGroup = jobKey.getGroup();
 
-            //get job's trigger
+            // get job's trigger
             List<Trigger> triggers = (List<Trigger>) scheduler.getTriggersOfJob(jobKey);
             Date nextFireTime = triggers.get(0).getNextFireTime();
 
@@ -129,6 +194,7 @@ public class MyQuartz {
         }
         return jobKeys;
     }
+
     public Set<JobKey> getJobs() throws SchedulerException {
         Set<JobKey> jobKeys = new HashSet<>();
         for (String groupName : scheduler.getJobGroupNames()) {
@@ -136,26 +202,32 @@ public class MyQuartz {
         }
         return jobKeys;
     }
-//    public static void main(String[] args) {
-//        MyQuartz myQuartz = new MyQuartz();
-//        try {
-//            Scheduler scheduler = myQuartz.start();
-//            scheduler.getContext().put("note","喝水schedule");
-//            // define the job and tie it to our HelloJob class
-//            JobDetail jobDetail = myQuartz.addJob(AlarmJob.class,"alarmJob","agroup");
-//            jobDetail.getJobDataMap().put("note","喝水Job");
-//            // Trigger the job to run now, and then repeat every 3 seconds
-//            String cronExpr = "0/5 * * * * ?";
-//            Trigger trigger = myQuartz.addCronTrigger(cronExpr,"alrmtrigger", "agroup");
-//
-//            trigger.getJobDataMap().put("note","喝水trigger");
-//            // Tell quartz to schedule the job using our trigger
-//            myQuartz.scheduleJob(jobDetail, trigger);
-//            myQuartz.getJobs();
-//        } catch (SchedulerException se) {
-//            se.printStackTrace();
-//        }
-//
-//
-//    }
+    
+    // public static void main(String[] args) {
+    //     MyQuartz myQuartz = new MyQuartz();
+    // try {
+    // Scheduler scheduler = myQuartz.start();
+    // scheduler.getContext().put("note","喝水schedule");
+    // // define the job and tie it to our HelloJob class
+    // JobDetail jobDetail = myQuartz.addJob(AlarmJob.class,"alarmJob","agroup");
+    // jobDetail.getJobDataMap().put("note","喝水Job");
+    // // Trigger the job to run now, and then repeat every 3 seconds
+    // String cronExpr = "0/5 * * * * ?";
+    // Trigger trigger = myQuartz.addCronTrigger(cronExpr,"alrmtrigger", "agroup");
+    //
+    // trigger.getJobDataMap().put("note","喝水trigger");
+    // // Tell quartz to schedule the job using our trigger
+    // myQuartz.scheduleJob(jobDetail, trigger);
+    // myQuartz.getJobs();
+    // } catch (SchedulerException se) {
+    // se.printStackTrace();
+    // }
+    //----
+    // 2. 测试将星期转成周一到周日为1-7
+    //     String cronExpr = "0 30 18 ? * 1-7 ; 周一到周五(2-6，)，18点半下班打卡";
+    //     System.out.println(cronExpr);
+    //     String cron = myQuartz.firstDayOfWeek(cronExpr);
+    //     //should be “0 30 18 ? * 7-6 ; 周一到周五(2-6，)，18点半下班打卡”
+    //     System.out.println(cron);
+    // }
 }
