@@ -1,5 +1,5 @@
 # Magic Alarm
-[Chinese version  中文版 ](README_cn.md)
+[Chinese version  中文版 ](README.md)
 
 My first target is to alert some hard working person to stand up to move and drink some water.
 Also you can use to alert your girl friend's birthday or other important things.
