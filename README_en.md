@@ -1,4 +1,5 @@
 # Magic Alarm
+[Chinese version  中文版 ](README_cn.md)
 My first target is to alert some hard working person to stand up to move and drink some water.
 Also you can use to alert your girl friend's birthday or other important things.
 
@@ -50,5 +51,5 @@ config.txt example
 3.  Commit your code
 4.  Create Pull Request
 
-#### Toto
-Add audio and music
+#### License
+MIT License
