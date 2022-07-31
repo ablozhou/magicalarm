@@ -1,5 +1,6 @@
 # 万能闹钟 MagicAlarm
-[english version](README.en.md)
+[english version](README_en.md)
+
 一些朋友工作太投入，以致影响身体。所以本工具初衷是提醒站起来走动喝点水。
 当然可以用于提醒女朋友生日和办其他重要事情之类。
 
