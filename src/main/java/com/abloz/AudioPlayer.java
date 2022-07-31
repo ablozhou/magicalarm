@@ -1,11 +1,6 @@
 package com.abloz;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
 
@@ -14,10 +9,13 @@ import javax.media.Manager;
 import javax.media.NoPlayerException;
 import javax.media.Player;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class AudioPlayer {
     Logger logger = LoggerFactory.getLogger(AudioPlayer.class);
     Player player = null;
-    String fileName = "src/main/resources/1.wav";
+    String fileName = "audio/1.wav";
 
     public AudioPlayer() {
     };

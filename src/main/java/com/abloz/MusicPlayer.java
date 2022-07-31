@@ -5,16 +5,17 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
-import javazoom.jl.decoder.JavaLayerException;
-import javazoom.jl.player.Player;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javazoom.jl.decoder.JavaLayerException;
+import javazoom.jl.player.Player;
 
 public class MusicPlayer {
     Logger logger = LoggerFactory.getLogger(MusicPlayer.class);
     FileInputStream inputStream = null;
     BufferedInputStream bufferedInputStream = null;
-    String fileName = "a1.mp3";
+    String fileName = "audio/a1.mp3";
     Thread playThread = null;
     Player player = null;
     public MusicPlayer() {
@@ -77,12 +78,12 @@ public class MusicPlayer {
 
         playThread.start();
 
-//        try {
-//            Thread.sleep(10000);
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
-//        player.close();
+    //    try {
+    //        Thread.sleep(10000);
+    //    } catch (InterruptedException e) {
+    //        e.printStackTrace();
+    //    }
+    //    player.close();
 
     }
 }
